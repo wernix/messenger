@@ -15,6 +15,9 @@ public:
     explicit ChatBoxForm(QWidget *parent = 0);
     ~ChatBoxForm();
 
+private slots:
+    void on_sendButton_clicked();
+
 private:
     Ui::ChatBoxForm *ui;
 };
