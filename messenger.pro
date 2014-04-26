@@ -14,14 +14,16 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
+    aboutdialog.cpp \
     preferencesdialog.cpp \
-    aboutdialog.cpp
+    chatboxform.cpp
 
 HEADERS  += mainwindow.h \
+    aboutdialog.h \
     preferencesdialog.h \
-    aboutdialog.h
+    chatboxform.h
 
 FORMS    += mainwindow.ui \
-    preferencesdialog.ui \
     aboutdialog.ui \
-    preferencesdialog.ui
+    preferencesdialog.ui \
+    chatboxform.ui

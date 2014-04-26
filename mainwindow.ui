@@ -14,22 +14,18 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QListView" name="listBuddies">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>171</width>
-      <height>211</height>
-     </rect>
-    </property>
-    <property name="sizePolicy">
-     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-      <horstretch>0</horstretch>
-      <verstretch>0</verstretch>
-     </sizepolicy>
-    </property>
-   </widget>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QListView" name="listBuddies">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QMenuBar" name="menuBar">
@@ -45,6 +41,8 @@
     <property name="title">
      <string>Buddies</string>
     </property>
+    <addaction name="actionAdd_buddy"/>
+    <addaction name="actionNew_conversation"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -70,6 +68,16 @@
   <action name="actionAbout">
    <property name="text">
     <string>About</string>
+   </property>
+  </action>
+  <action name="actionAdd_buddy">
+   <property name="text">
+    <string>Add buddy</string>
+   </property>
+  </action>
+  <action name="actionNew_conversation">
+   <property name="text">
+    <string>New conversation</string>
    </property>
   </action>
  </widget>

@@ -12,3 +12,8 @@ AboutDialog::~AboutDialog()
 {
     delete ui;
 }
+
+void AboutDialog::on_closeButton_clicked()
+{
+    this->close();
+}

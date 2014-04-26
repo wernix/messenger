@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>AboutDialog</class>
  <widget class="QDialog" name="AboutDialog">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,13 +14,13 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>About</string>
   </property>
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>0</x>
-     <y>0</y>
+     <x>20</x>
+     <y>30</y>
      <width>111</width>
      <height>20</height>
     </rect>
@@ -26,10 +29,10 @@
     <string>kdslakn</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton">
+  <widget class="QPushButton" name="closeButton">
    <property name="geometry">
     <rect>
-     <x>10</x>
+     <x>20</x>
      <y>120</y>
      <width>80</width>
      <height>23</height>
