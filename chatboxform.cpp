@@ -31,7 +31,7 @@ void ChatBoxForm::on_sendButton_clicked()
         msg["sender"] = "sender_nick";
         msg["reciver"] = "reciver_nick";
 
-        MainWindow::initializeMessage(msg);
+        emit sendMessage(msg);
 
         // When msg sent msgEdit is cleaning
         ui->msgEdit->clear();

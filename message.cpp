@@ -1,5 +1,6 @@
 #include "message.h"
-
+#include <QCryptographicHash>
+#include <QTcpSocket>
 
 Message::Message()
 {
@@ -15,15 +16,15 @@ QString Message::mIdGenerate(QString time)
 
 bool Message::sendMsgToServer(QString jsonMsg)
 {
-    QByteArray data(jsonMsg.toUtf8());
-    bool status = QTcpSocket::isValid();
-    if(status) {
-        QTcpSocket::write( data );
-        qDebug()<<"isOpen?!";
-        return 1;
-    }else {
-        qDebug()<<"isClose!";
-    }
+//    QByteArray data(jsonMsg.toUtf8());
+//    bool status = QTcpSocket::isValid();
+//    if(status) {
+//        QTcpSocket::write( data );
+//        qDebug()<<"isOpen?!";
+//        return 1;
+//    }else {
+//        qDebug()<<"isClose!";
+//    }
 
     return 0;
 }
@@ -35,7 +36,7 @@ void Message::addMsgToMsgbox()
                         "<b>"+time+" "+sender+"(->"+reciver+")</b><br>"
                         +msg+
                       "</p>";
-    ui->msgbox->append(send_msg);
+//    ui->msgbox->append(send_msg);
 }
 
 QString Message::parserToJson(QString msg)

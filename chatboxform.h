@@ -22,6 +22,9 @@ private slots:
 private:
     Ui::ChatBoxForm *ui;
 
+signals:
+    void sendMessage(QMap<QString, QString> map);
+
 };
 
 

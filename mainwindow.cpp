@@ -15,6 +15,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connectToServer("172.30.0.7", 8008);
 
     ChatBoxForm *form = new ChatBoxForm;
+    connect(form, SIGNAL(sendMessage(QMap<QString,QString>)), this, SLOT(initializeMessage(QMap<QString,QString>)));
+
     form->show();
 }
 

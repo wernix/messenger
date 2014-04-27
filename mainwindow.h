@@ -19,6 +19,8 @@ public:
     ~MainWindow();
     QTcpSocket *connectionManager;
     bool connectionStatus;
+
+public slots:
     void initializeMessage(QMap<QString, QString>);
 
 private slots:
