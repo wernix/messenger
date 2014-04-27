@@ -5,6 +5,12 @@
 #include <QMainWindow>
 #include <QTcpSocket>
 #include <QMap>
+#include <QTabBar>
+
+enum JsonParser {
+    ParserCoding,
+    ParserDecoding
+};
 
 namespace Ui {
 class MainWindow;
@@ -19,15 +25,23 @@ public:
     ~MainWindow();
     QTcpSocket *connectionManager;
     bool connectionStatus;
+
+public slots:
     void initializeMessage(QMap<QString, QString>);
 
 private slots:
     void on_actionAbout_triggered();
     void readTcpData();
 
+    void on_actionNew_conversation_triggered();
+
 private:
     Ui::MainWindow *ui;
+    ChatBoxForm *form;
     void connectToServer(QString, qint32);
+    void addToConversation(QString, QString, QString, QString);
+    void addNewTab(QString);
+    QString parserToJson(QString, JsonParser);
 };
 
 

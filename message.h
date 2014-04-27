@@ -4,6 +4,7 @@
 #include <QString>
 #include <QDateTime>
 #include <QDebug>
+#include <QCryptographicHash>
 
 class Message
 {
@@ -14,16 +15,10 @@ public:
     QString msg;
     QString time;
     void setTimeAndDateMessage();
-    void prepareMessageToSending();
-    void addMsgToMsgbox();
 
 private:
     QString mIdGenerate(QString);
     QString getTimeDate();
-    QString parserToJson(QString);
-    QString jsonMessage();
-protected:
-    bool sendMsgToServer(QString);
 };
 
 #endif // MESSAGE_H
