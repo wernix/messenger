@@ -2,7 +2,7 @@
 #define CHATBOXFORM_H
 
 #include <QWidget>
-#include <QTcpSocket>
+#include "message.h"
 
 namespace Ui {
 class ChatBoxForm;
@@ -15,16 +15,14 @@ class ChatBoxForm : public QWidget
 public:
     explicit ChatBoxForm(QWidget *parent = 0);
     ~ChatBoxForm();
-    QTcpSocket *_pSocket;
 
 private slots:
     void on_sendButton_clicked();
 
 private:
     Ui::ChatBoxForm *ui;
-    void sendMsgToServer(QString);
-    QString parserToJson(QString);
 
 };
+
 
 #endif // CHATBOXFORM_H

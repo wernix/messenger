@@ -16,12 +16,14 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     aboutdialog.cpp \
     preferencesdialog.cpp \
-    chatboxform.cpp
+    chatboxform.cpp \
+    message.cpp
 
 HEADERS  += mainwindow.h \
     aboutdialog.h \
     preferencesdialog.h \
-    chatboxform.h
+    chatboxform.h \
+    message.h
 
 FORMS    += mainwindow.ui \
     aboutdialog.ui \

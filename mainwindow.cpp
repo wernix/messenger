@@ -1,9 +1,10 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "chatboxform.h"
 
-#include "aboutdialog.h"
 #include "chatboxform.h"
+#include "aboutdialog.h"
+#include "message.h"
+
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -11,10 +12,9 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    connectTcp();
+    connectToServer("172.30.0.7", 8008);
 
     ChatBoxForm *form = new ChatBoxForm;
-    form->_pSocket = _pSocket;
     form->show();
 }
 
@@ -29,19 +29,39 @@ void MainWindow::on_actionAbout_triggered()
     dialog->show();
 }
 
-void MainWindow::connectTcp()
+void MainWindow::connectToServer(QString address, qint32 port)
 {
-    _pSocket = new QTcpSocket(this);
-    connect( _pSocket, SIGNAL(readyRead()), SLOT(readTcpData()) );
-
-    _pSocket->connectToHost("172.30.0.9", 8008);
-    if( _pSocket->waitForConnected() ) {
+    connectionManager = new QTcpSocket(this);
+    connectionManager->connectToHost(address, port);
+    connect(connectionManager, SIGNAL(readyRead()), SLOT(readTcpData()));
+    if( connectionManager->waitForConnected() ) {
         qDebug()<<"Connect to Server!";
+    }
+    if(connectionManager->error()) {
+        qDebug()<<connectionManager->errorString();
     }
 }
 
 void MainWindow::readTcpData()
 {
-    QByteArray data = _pSocket->readAll();
-    qDebug()<<data;
+    QByteArray data = connectionManager->readAll();
+    QMap<QString, QString> message;
+    message["data"] = QTime::currentTime().toString("hh:mm:ss") + " " + QDate::currentDate().toString("dd-MM-yyyy");
+    message["sender"] = "server";
+    message["reciver"] = "client";
+    message["msg"] = data;
+    qDebug()<<QString(message["sender"]+":"+message["msg"]);
+    //addMsgToMsgbox(message);
+
+}
+
+void MainWindow::initializeMessage(QMap<QString, QString> msg_info)
+{
+    Message newMessage;
+    newMessage.sender = msg_info["sender"];
+    newMessage.reciver = msg_info["reciver"];
+    newMessage.msg = msg_info["msg"];
+    newMessage.setTimeAndDateMessage();
+    qDebug()<<newMessage.msg;
+
 }

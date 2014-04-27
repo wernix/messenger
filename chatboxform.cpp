@@ -1,12 +1,8 @@
 #include "chatboxform.h"
 #include "ui_chatboxform.h"
-#include <QTextDocument>
-#include <QPainter>
-#include <QAbstractItemDelegate>
-#include <QMap>
+#include "mainwindow.h"
 
-#include <QDebug>
-//#include <QTcpSocket>
+
 
 ChatBoxForm::ChatBoxForm(QWidget *parent) :
     QWidget(parent),
@@ -21,34 +17,25 @@ ChatBoxForm::~ChatBoxForm()
 
 }
 
+
 void ChatBoxForm::on_sendButton_clicked()
 {
-    QString msg = ui->msgEdit->toPlainText();
-    if(msg.isSimpleText()) {
-        QMap<QString, QString> message;
-        message["data"] = "12:34 25-03-2015";
-        message["sender"] = "sender_nick";
-        message["reciver"] = "reciver_nick";
-        message["msg"] = msg;
 
-        QString sendMsg = "<p><b>"+message["sender"]+" "+message["data"]+"</b><br>"+message["msg"]+"</p>";
-        ui->msgbox->append(sendMsg);
-        sendMsgToServer(parserToJson(msg));
 
+    QString text = ui->msgEdit->toPlainText();
+    //QString msg = ui->msgEdit->toPlainText();
+    if(text.isSimpleText()) {
+        // Prepare message and info before sending
+        QMap<QString, QString> msg;
+        msg["msg"] = text;
+        msg["sender"] = "sender_nick";
+        msg["reciver"] = "reciver_nick";
+
+        MainWindow::initializeMessage(msg);
+
+        // When msg sent msgEdit is cleaning
         ui->msgEdit->clear();
     }
 }
 
-QString ChatBoxForm::parserToJson(QString msg)
-{
-    return msg;
-}
 
-void ChatBoxForm::sendMsgToServer(QString jsonMsg)
-{
-    QByteArray data(jsonMsg.toUtf8());
-
-    if( _pSocket->isOpen() ) {
-        _pSocket->write( data );
-    }
-}
