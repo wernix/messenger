@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network
+QT       += core gui network sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -16,16 +16,23 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     aboutdialog.cpp \
     preferencesdialog.cpp \
-    chatboxform.cpp \
-    message.cpp
+    message.cpp \
+    chatboxdialog.cpp \
+    chatboxdialogcontent.cpp \
+    contactslistmodel.cpp \
+    myprofile.cpp
 
 HEADERS  += mainwindow.h \
     aboutdialog.h \
     preferencesdialog.h \
-    chatboxform.h \
-    message.h
+    message.h \
+    chatboxdialog.h \
+    chatboxdialogcontent.h \
+    myprofile.h
 
 FORMS    += mainwindow.ui \
     aboutdialog.ui \
     preferencesdialog.ui \
-    chatboxform.ui
+    chatboxform.ui \
+    chatboxdialog.ui \
+    chatboxdialogcontent.ui

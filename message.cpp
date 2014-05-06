@@ -1,26 +1,44 @@
 #include "message.h"
 
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonValue>
 
 Message::Message()
 {
 }
 
-
-QString Message::mIdGenerate(QString time)
+void Message::setTimestamp()
 {
-    QCryptographicHash sha1(QCryptographicHash::Sha1);
-    sha1.addData(time.toUtf8());
-    return sha1.result();
+    timestamp = QTime::currentTime().toString("hh:mm:ss") + " " + QDate::currentDate().toString("dd.MM.yyyy");
 }
 
-void Message::setTimeAndDateMessage()
+void Message::encode()
 {
-    time = getTimeDate();
+    QJsonDocument jsonDoc;
+    QJsonObject jsonObj;
+    jsonObj.insert("Type", QJsonValue(type));
+    jsonObj.insert("From", QJsonValue(from));
+    jsonObj.insert("To", QJsonValue(to));
+    jsonObj.insert("Message", QJsonValue(msg));
+
+    jsonDoc.setObject(jsonObj);
+    json = jsonDoc.toJson();
 }
 
-QString Message::getTimeDate()
+void Message::decode(QByteArray data)
 {
-    QString timeDate = QTime::currentTime().toString("hh:mm:ss") + " " + QDate::currentDate().toString("dd-MM-yyyy");
-    return timeDate;
+    QJsonParseError jsonError;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(data,&jsonError);
+    QJsonObject jsonObj = jsonDoc.object();
+
+    type = jsonObj["Type"].toInt();
+    from = jsonObj["From"].toString();
+    to = jsonObj["To"].toString();
+    msg = jsonObj["Message"].toString();
 }
 
+void Message::toHtml()
+{
+    html = "<p><font size='-3'>" + timestamp + "</font><b> " + from + "</b><br>" + msg + "</p>";
+}

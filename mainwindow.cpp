@@ -1,10 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include "chatboxform.h"
-#include "aboutdialog.h"
-#include "ui_chatboxform.h"
-#include "message.h"
+#include "ui_chatboxdialogcontent.h"
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -12,17 +9,43 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    form = new ChatBoxDialog(0);
 
-    connectToServer("172.30.0.7", 8008);
+    createdTabs = new QMap<QString, ChatBoxDialogContent*>;
 
-    form = new ChatBoxForm;
-    connect(form, SIGNAL(sendMessage(QMap<QString,QString>)), this, SLOT(initializeMessage(QMap<QString,QString>)));
-    form->show();
+    connectStatusLabel = new QLabel;
+
+    statusBar()->addWidget(connectStatusLabel);
+
+    openLocalDatabase();
+
+    loadMyProfile();
+
+    initContactsList();
+
+    //connectToServer("172.30.0.7", 8008);
+    connectToServer("127.0.0.1", 8008);
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+// Load user account data from local database
+void MainWindow::loadMyProfile()
+{
+    myProfile = new MyProfile;
+    if(accountsDb.open()) {
+        QSqlQuery q("select * from accounts", accountsDb);
+        q.exec();
+        if(q.result())
+            while(q.next()) {
+                myProfile->login = q.value("login").toString();
+                myProfile->alias = q.value("alias").toString();
+            }
+
+    }
 }
 
 void MainWindow::on_actionAbout_triggered()
@@ -31,92 +54,159 @@ void MainWindow::on_actionAbout_triggered()
     dialog->show();
 }
 
+// Open local database (contacts, accounts)
+void MainWindow::openLocalDatabase()
+{
+    contactsDb = QSqlDatabase::addDatabase("QSQLITE", "contacts.sqlite");
+    contactsDb.setDatabaseName("contacts.sqlite");
+    if(!contactsDb.open())
+        QMessageBox::warning(this, "Baza kontaktów", contactsDb.lastError().text(), QMessageBox::Ok);
+    contactsDb.close();
+
+    accountsDb = QSqlDatabase::addDatabase("QSQLITE", "accounts.sqlite");
+    accountsDb.setDatabaseName("accounts.sqlite");
+    if(!accountsDb.open())
+        QMessageBox::warning(this, "Baza z kontami", accountsDb.lastError().text(), QMessageBox::Ok);
+    accountsDb.close();
+}
+
+// Initialize CL, load contacts from database and setup table
+void MainWindow::initContactsList()
+{
+    if(contactsDb.open()) {
+        contactsModel = new ContactsListModel(this, contactsDb);
+        contactsModel->setTable("contacts");
+        contactsModel->select();
+        ui->contactsList->setModel(contactsModel);
+        ui->contactsList->hideColumn(ContactProto);
+        ui->contactsList->hideColumn(ContactLogin);
+
+        QHeaderView *vHeader = ui->contactsList->verticalHeader();
+        vHeader->setDefaultSectionSize(20);
+        ui->contactsList->setContentsMargins(QMargins(0,0,0,0));
+    }
+}
+
+// Function using to connect with server
 void MainWindow::connectToServer(QString address, qint32 port)
 {
     connectionManager = new QTcpSocket(this);
     connectionManager->connectToHost(address, port);
     connect(connectionManager, SIGNAL(readyRead()), SLOT(readTcpData()));
-    if( connectionManager->waitForConnected() ) {
-        qDebug()<<"Connect to Server!";
-    }
-    if(connectionManager->error()) {
-        qDebug()<<connectionManager->errorString();
-    }
+
+    if(connectionManager->waitForConnected(500)) {
+        emit connectionManager->connected();
+    }else
+        emit connectionManager->disconnected();
 }
 
+// Function listening and captures data sends to client,
 void MainWindow::readTcpData()
 {
+    Message msg;
     QByteArray data = connectionManager->readAll();
-    QMap<QString, QString> message;
-    message["data"] = QTime::currentTime().toString("hh:mm:ss") + " " + QDate::currentDate().toString("dd-MM-yyyy");
-    message["sender"] = "server";
-    message["reciver"] = "client";
-    message["msg"] = data;
-    qDebug()<<QString(message["sender"]+":"+message["msg"]);
-    //addMsgToMsgbox(message);
 
+    msg.decode(data);
+    msg.setTimestamp();
+
+    if(msg.from == myProfile->login) {
+        connect(this, SIGNAL(sendMessage(Message)), this, SLOT(recognitionMessage(Message)));
+        emit sendMessage(msg);
+    }
+
+    qDebug()<<"readTcp: " + data;
 }
 
-void MainWindow::initializeMessage(QMap<QString, QString> msg_info)
+// Check if this tab is open.
+int MainWindow::tabIsOpen(QString tabName)
 {
-    Message newMessage;
-    newMessage.sender = msg_info["sender"];
-    newMessage.reciver = msg_info["reciver"];
-    newMessage.msg = msg_info["msg"];
-    newMessage.setTimeAndDateMessage();
-
-    addToConversation(newMessage.time, newMessage.sender, newMessage.reciver, newMessage.msg);
-    //sendToServer(//qDebug()<<newMessage.msg;
-
-}
-
-void MainWindow::addToConversation(QString time, QString sender, QString reciver, QString msg)
-{
-    int tabIdConversation;
-    QTabBar *tabBar = new QTabBar;
-    tabBar = form->ui->buddyTabs->tabBar();
-    if(form->isVisible()) {
-        int countTabs = tabBar->count()-1;
+    int countTabs = form->count();
+    if(countTabs >= 0) {
         for(int i = 0; i <= countTabs; i++) {
-            if(tabBar->tabText(i) == reciver) {
-                qDebug()<<"chat is opened!";
-                tabIdConversation = i;
-                break;
+            if(form->tabText(i) == tabName) {
+                form->setCurrentIndex(i);
+                form->activateWindow();
+                // check chatbox minimalize
+                return true;
             }
-
         }
-        if(!countTabs) {
-            addNewTab(reciver);
-            qDebug()<<"is opened!";
-        }
-
-        QString send_msg = "<p>"
-                            "<b>"+time+" "+sender+"(->"+reciver+")</b><br>"
-                            +msg+
-                          "</p>";
-        form->ui->msgbox->append(send_msg);
-    }//else {
-//        qDebug()<<"ChatBoxForm isnt Visable = false";
-//        form = new ChatBoxForm;
-//        form->ui->buddyTabs->tabBar()->setTabData(0, reciver);
-//    }
+    }
+    return false;
 }
 
-QString MainWindow::parserToJson(QString msg, JsonParser option)
+// Check that ChatBoxDialog is open.
+void MainWindow::openChatBox()
 {
-    return msg;
+    if (!form->isVisible())
+        form->show();
 }
 
-void MainWindow::addNewTab(QString reciver)
+// Function manages that message, when send to server
+// and when show to chatbox
+void MainWindow::recognitionMessage(Message msg)
 {
-    form->ui->buddyTabs->tabBar()->insertTab(reciver.toInt(),reciver);
+    if(msg.from == myProfile->login) {
+        addToConversation(msg);
+        connectionManager->write(msg.json);
+    }
+
+    if(msg.to == myProfile->login) {
+        addToConversation(msg);
+    }
+}
+
+// Add message to ChatBox
+void MainWindow::addToConversation(Message msg)
+{
+    openChatBox();
+
+    QString tabName = msg.to;
+
+    if(msg.to == myProfile->login)
+        tabName = msg.from;
+
+    bool tabOpen = tabIsOpen(tabName);
+
+    if(!tabOpen)
+        addNewTab(tabName);
+
+    // Get sender CBDC widget and add to conversation message
+    ChatBoxDialogContent *w = (ChatBoxDialogContent*) sender();
+    w->ui->conversationHistory->append(msg.html);
+
+    qDebug()<<"client: '" + msg.from + "' send to '" + msg.to + "' message: '" + msg.msg + "'";
+}
+
+
+// Create new conversation tab
+// Insert or add new tab in CBD and add connect signal to slot
+void MainWindow::addNewTab(QString to)
+{
+    openChatBox();
+
+    ChatBoxDialogContent *newContent = new ChatBoxDialogContent();
+    createdTabs->insert(to, newContent);
+
+    form->insertTab(to.toInt(), createdTabs->take(to), to);
+    //form->addTab(createdTabs->take(to), to);
+    newContent->receiver = to;
+    connect(newContent, SIGNAL(sendMessage(Message)), this, SLOT(recognitionMessage(Message)));
+    form->setCurrentIndex(to.toInt());
+    form->activateWindow();
 }
 
 void MainWindow::on_actionNew_conversation_triggered()
 {
-    if(!form->isVisible()) {
-        form = new ChatBoxForm;
-        form->show();
-        connect(form, SIGNAL(sendMessage(QMap<QString,QString>)), this, SLOT(initializeMessage(QMap<QString,QString>)));
-    }
+    QModelIndex index = ui->contactsList->currentIndex();
+    if(index.model()->index(index.row(), ContactAlias, QModelIndex()).data().toString().isSimpleText())
+        on_contactsList_doubleClicked(index);
+}
+
+void MainWindow::on_contactsList_doubleClicked(const QModelIndex &index)
+{
+    //QString to = index.data().toString();
+    QString to = index.model()->index(index.row(), ContactAlias, QModelIndex()).data().toString();
+
+    if(!tabIsOpen(to))
+        addNewTab(to);
 }

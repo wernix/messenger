@@ -1,16 +1,32 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "chatboxform.h"
+#include "chatboxdialog.h"
+#include "aboutdialog.h"
+#include "message.h"
+#include "myprofile.h"
+#include "contactslistmodel.cpp"
 #include <QMainWindow>
 #include <QTcpSocket>
 #include <QMap>
-#include <QTabBar>
+#include <QtSql>
+#include <QSqlTableModel>
+#include <QMessageBox>
+#include <QSettings>
+#include <QLabel>
 
 enum JsonParser {
     ParserCoding,
     ParserDecoding
 };
+
+enum ContactsList {
+    ContactStatus,
+    ContactProto,
+    ContactAlias,
+    ContactLogin
+};
+
 
 namespace Ui {
 class MainWindow;
@@ -22,26 +38,64 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = 0);
+
     ~MainWindow();
+
     QTcpSocket *connectionManager;
+
     bool connectionStatus;
 
+    ChatBoxDialog *form;
+    MyProfile *myProfile;
+
 public slots:
-    void initializeMessage(QMap<QString, QString>);
+    void recognitionMessage(Message);
+
+signals:
+    void sendMessage(Message);
 
 private slots:
     void on_actionAbout_triggered();
+
     void readTcpData();
 
     void on_actionNew_conversation_triggered();
 
+    void on_contactsList_doubleClicked(const QModelIndex &index);
+
 private:
+    QMap<QString, QString> *config;
+
+    QSqlDatabase contactsDb, accountsDb;
+
+    bool isMinimalized;
+
+    QSqlTableModel *contactsModel;
+
+    void openLocalDatabase();
+
+    void loadMyProfile();
+
+    void openChatBox();
+
+    int tabIsOpen(QString);
+
     Ui::MainWindow *ui;
-    ChatBoxForm *form;
+
+    ChatBoxDialogContent *templateChat;
+
+    QMap<QString, ChatBoxDialogContent*> *createdTabs;
+
     void connectToServer(QString, qint32);
-    void addToConversation(QString, QString, QString, QString);
+
+    void addToConversation(Message);
+
     void addNewTab(QString);
-    QString parserToJson(QString, JsonParser);
+
+    void initContactsList();
+
+    QLabel *connectStatusLabel;
+
 };
 
 
