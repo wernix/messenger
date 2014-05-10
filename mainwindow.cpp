@@ -13,9 +13,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     createdTabs = new QMap<QString, ChatBoxDialogContent*>;
 
-    connectStatusLabel = new QLabel;
-
-    statusBar()->addWidget(connectStatusLabel);
+    statusBar()->addWidget(ui->statusComboBox);
+    statusBar()->setContentsMargins(5,1,5,1);
 
     openLocalDatabase();
 
@@ -94,10 +93,31 @@ void MainWindow::connectToServer(QString address, qint32 port)
     connectionManager->connectToHost(address, port);
     connect(connectionManager, SIGNAL(readyRead()), SLOT(readTcpData()));
 
+    connect(connectionManager, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(checkConnection(QAbstractSocket::SocketState)));
+
     if(connectionManager->waitForConnected(500)) {
         emit connectionManager->connected();
-    }else
+    }else {
         emit connectionManager->disconnected();
+    }
+
+
+}
+
+// Function check and set current status in statusBar
+void MainWindow::checkConnection(QAbstractSocket::SocketState state)
+{
+    switch(state)
+    {
+    case QAbstractSocket::UnconnectedState:
+        ui->statusComboBox->setCurrentIndex(StatusOffline);
+        //ui->connectStatus->setText("Offline");
+        break;
+    case QAbstractSocket::ConnectedState:
+        ui->statusComboBox->setCurrentIndex(StatusOnline);
+        //ui->connectStatus->setText("Online");
+        break;
+    }
 }
 
 // Function listening and captures data sends to client,
@@ -182,14 +202,22 @@ void MainWindow::addToConversation(Message msg)
 // Insert or add new tab in CBD and add connect signal to slot
 void MainWindow::addNewTab(QString to)
 {
+    QString login;
+    QSqlQuery q("SELECT login FROM contacts WHERE alias='"+to+"';", contactsDb);
+    if(q.next()) {
+        login = q.value("login").toString();
+    }else
+        return;
+
     openChatBox();
 
     ChatBoxDialogContent *newContent = new ChatBoxDialogContent();
+    newContent->myProfile = myProfile;
     createdTabs->insert(to, newContent);
 
     form->insertTab(to.toInt(), createdTabs->take(to), to);
     //form->addTab(createdTabs->take(to), to);
-    newContent->receiver = to;
+    newContent->receiver = login;
     connect(newContent, SIGNAL(sendMessage(Message)), this, SLOT(recognitionMessage(Message)));
     form->setCurrentIndex(to.toInt());
     form->activateWindow();
@@ -209,4 +237,19 @@ void MainWindow::on_contactsList_doubleClicked(const QModelIndex &index)
 
     if(!tabIsOpen(to))
         addNewTab(to);
+}
+
+void MainWindow::on_statusComboBox_currentIndexChanged(int index)
+{
+    switch(index)
+    {
+    case StatusOnline:
+        if(!QAbstractSocket::ConnectedState)
+            connectToServer("127.0.0.1", 8008);
+        break;
+    case StatusOffline:
+        if(QAbstractSocket::ConnectedState)
+            connectionManager->disconnectFromHost();
+        break;
+    }
 }

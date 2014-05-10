@@ -36,3 +36,6 @@ FORMS    += mainwindow.ui \
     chatboxform.ui \
     chatboxdialog.ui \
     chatboxdialogcontent.ui
+
+RESOURCES += \
+    resources.qrc

@@ -27,6 +27,10 @@ enum ContactsList {
     ContactLogin
 };
 
+enum ConnectionStatus {
+    StatusOnline,
+    StatusOffline
+};
 
 namespace Ui {
 class MainWindow;
@@ -59,9 +63,13 @@ private slots:
 
     void readTcpData();
 
+    void checkConnection(QAbstractSocket::SocketState);
+
     void on_actionNew_conversation_triggered();
 
     void on_contactsList_doubleClicked(const QModelIndex &index);
+
+    void on_statusComboBox_currentIndexChanged(int index);
 
 private:
     QMap<QString, QString> *config;
@@ -93,8 +101,6 @@ private:
     void addNewTab(QString);
 
     void initContactsList();
-
-    QLabel *connectStatusLabel;
 
 };
 

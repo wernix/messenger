@@ -8,6 +8,8 @@ ChatBoxDialogContent::ChatBoxDialogContent(QWidget *parent) :
     ui(new Ui::ChatBoxDialogContent)
 {
     ui->setupUi(this);
+
+    //myProfile = new MyProfile;
 }
 
 ChatBoxDialogContent::~ChatBoxDialogContent()
@@ -18,13 +20,11 @@ ChatBoxDialogContent::~ChatBoxDialogContent()
 void ChatBoxDialogContent::on_sendButton_clicked()
 {
     Message msg;
-    QSettings cfg;
 
     QString text = ui->msgEdit->toPlainText();
     if(text.isSimpleText()) {
         msg.type = Message::C2C;
-        msg.from = cfg.value("MyProfile/alias").toString();
-        //msg.from = "asd";
+        msg.from = myProfile->login;
         msg.to = receiver;
         msg.msg = text;
         msg.setTimestamp();

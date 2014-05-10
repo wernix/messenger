@@ -5,8 +5,8 @@
 #include <QMap>
 #include <QSettings>
 
-
 #include "message.h"
+#include "myprofile.h"
 
 namespace Ui {
 class ChatBoxDialogContent;
@@ -22,6 +22,7 @@ public:
     Ui::ChatBoxDialogContent *ui;
 
     QString receiver;
+    MyProfile *myProfile;
     void send(Message);
 
 signals:

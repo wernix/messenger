@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>Messenger</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="resources.qrc">
+    <normaloff>:/icons/ico/tray.svg</normaloff>:/icons/ico/tray.svg</iconset>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
@@ -44,6 +48,20 @@
       <attribute name="verticalHeaderVisible">
        <bool>false</bool>
       </attribute>
+     </widget>
+    </item>
+    <item>
+     <widget class="QComboBox" name="statusComboBox">
+      <item>
+       <property name="text">
+        <string>Online</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Offline</string>
+       </property>
+      </item>
      </widget>
     </item>
    </layout>
@@ -103,6 +121,8 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>
