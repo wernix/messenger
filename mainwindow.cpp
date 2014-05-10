@@ -9,11 +9,12 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    connectionManager = new QTcpSocket(this);
     form = new ChatBoxDialog(0);
-
     createdTabs = new QMap<QString, ChatBoxDialogContent*>;
 
     statusBar()->addWidget(ui->statusComboBox);
+    statusBar()->addWidget(ui->socketStateLabel);
     statusBar()->setContentsMargins(5,1,5,1);
 
     openLocalDatabase();
@@ -89,7 +90,6 @@ void MainWindow::initContactsList()
 // Function using to connect with server
 void MainWindow::connectToServer(QString address, qint32 port)
 {
-    connectionManager = new QTcpSocket(this);
     connectionManager->connectToHost(address, port);
     connect(connectionManager, SIGNAL(readyRead()), SLOT(readTcpData()));
 
@@ -101,6 +101,7 @@ void MainWindow::connectToServer(QString address, qint32 port)
         emit connectionManager->disconnected();
     }
 
+    checkConnection(connectionManager->state());
 
 }
 
@@ -111,11 +112,26 @@ void MainWindow::checkConnection(QAbstractSocket::SocketState state)
     {
     case QAbstractSocket::UnconnectedState:
         ui->statusComboBox->setCurrentIndex(StatusOffline);
-        //ui->connectStatus->setText("Offline");
+        ui->socketStateLabel->setText(tr("Disconnected"));
+        break;
+    case QAbstractSocket::HostLookupState:
+        ui->socketStateLabel->setText(tr("HostLookup"));
+        break;
+    case QAbstractSocket::BoundState:
+        ui->socketStateLabel->setText(tr("Bound"));
+        break;
+    case QAbstractSocket::ConnectingState:
+        ui->socketStateLabel->setText(tr("Connecting"));
+        break;
+    case QAbstractSocket::ClosingState:
+        ui->socketStateLabel->setText(tr("Closing"));
+        break;
+    case QAbstractSocket::ListeningState:
+        ui->socketStateLabel->setText(tr("Listening"));
         break;
     case QAbstractSocket::ConnectedState:
         ui->statusComboBox->setCurrentIndex(StatusOnline);
-        //ui->connectStatus->setText("Online");
+        ui->socketStateLabel->setText(tr("Connected"));
         break;
     }
 }
@@ -232,7 +248,6 @@ void MainWindow::on_actionNew_conversation_triggered()
 
 void MainWindow::on_contactsList_doubleClicked(const QModelIndex &index)
 {
-    //QString to = index.data().toString();
     QString to = index.model()->index(index.row(), ContactAlias, QModelIndex()).data().toString();
 
     if(!tabIsOpen(to))
@@ -244,11 +259,11 @@ void MainWindow::on_statusComboBox_currentIndexChanged(int index)
     switch(index)
     {
     case StatusOnline:
-        if(!QAbstractSocket::ConnectedState)
+        if(connectionManager->state() == QAbstractSocket::UnconnectedState)
             connectToServer("127.0.0.1", 8008);
         break;
     case StatusOffline:
-        if(QAbstractSocket::ConnectedState)
+        if(connectionManager->state() == QAbstractSocket::ConnectedState)
             connectionManager->disconnectFromHost();
         break;
     }

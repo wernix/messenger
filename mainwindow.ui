@@ -64,6 +64,13 @@
       </item>
      </widget>
     </item>
+    <item alignment="Qt::AlignRight">
+     <widget class="QLabel" name="socketStateLabel">
+      <property name="text">
+       <string>status</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
