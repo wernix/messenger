@@ -13,7 +13,7 @@
 #include <QSqlTableModel>
 #include <QMessageBox>
 #include <QSettings>
-#include <QLabel>
+#include <QSystemTrayIcon>
 
 enum JsonParser {
     ParserCoding,
@@ -59,11 +59,11 @@ signals:
     void sendMessage(Message);
 
 private slots:
-    void on_actionAbout_triggered();
-
     void readTcpData();
 
     void checkConnection(QAbstractSocket::SocketState);
+
+    void on_actionAbout_triggered();
 
     void on_actionNew_conversation_triggered();
 
@@ -71,10 +71,16 @@ private slots:
 
     void on_statusComboBox_currentIndexChanged(int index);
 
+    void on_tryIconActivated(QSystemTrayIcon::ActivationReason);
+
 private:
     QMap<QString, QString> *config;
 
     QSqlDatabase contactsDb, accountsDb;
+
+    QSystemTrayIcon *trayIcon;
+
+    QMenu *trayContextMenu;
 
     bool isMinimalized;
 
@@ -101,6 +107,10 @@ private:
     void addNewTab(QString);
 
     void initContactsList();
+
+    void createTrayIcon();
+
+    void createStatusBar();
 
 };
 

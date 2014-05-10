@@ -13,9 +13,11 @@ MainWindow::MainWindow(QWidget *parent) :
     form = new ChatBoxDialog(0);
     createdTabs = new QMap<QString, ChatBoxDialogContent*>;
 
-    statusBar()->addWidget(ui->statusComboBox);
-    statusBar()->addWidget(ui->socketStateLabel);
-    statusBar()->setContentsMargins(5,1,5,1);
+    createStatusBar();
+
+    createTrayIcon();
+
+
 
     openLocalDatabase();
 
@@ -30,6 +32,57 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+// Create and setup statusBar
+void MainWindow::createStatusBar()
+{
+    statusBar()->addWidget(ui->statusComboBox);
+    statusBar()->addWidget(ui->socketStateLabel);
+    statusBar()->setContentsMargins(5,1,5,1);
+}
+
+// Create and setup tray icon
+void MainWindow::createTrayIcon()
+{
+    trayIcon = new QSystemTrayIcon;
+    QIcon ico("ico/tray.svg");
+    trayIcon->setIcon(ico);
+    trayIcon->connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(on_tryIconActivated(QSystemTrayIcon::ActivationReason)));
+
+
+    trayContextMenu = new QMenu(this);
+    trayContextMenu->addAction(ui->actionMinimalize);
+    trayContextMenu->addAction(ui->actionRestore);
+    trayContextMenu->addAction(ui->actionQuit);
+    trayIcon->setContextMenu(trayContextMenu);
+    trayIcon->show();
+}
+
+// Tray icon actions
+void MainWindow::on_tryIconActivated(QSystemTrayIcon::ActivationReason reason)
+{
+    switch(reason)
+    {
+    case QSystemTrayIcon::Trigger:
+        if(connectionManager->state() == QAbstractSocket::ConnectedState)
+            trayIcon->showMessage("Messenger Status", "Every thing is all right, you are connected =)", QSystemTrayIcon::Information, 500);
+        else
+            trayIcon->showMessage("Messenger Status", "Not Connected", QSystemTrayIcon::Critical, 50000);
+        break;
+    case QSystemTrayIcon::Context:
+        break;
+    case QSystemTrayIcon::DoubleClick:
+        if(this->isHidden()) {
+            this->showNormal();
+        }else
+            this->hide();
+        break;
+    case QSystemTrayIcon::MiddleClick:
+        break;
+    case QSystemTrayIcon::Unknown:
+        break;
+    }
 }
 
 // Load user account data from local database
