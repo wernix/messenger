@@ -43,6 +43,8 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
 
+    void setWindowFlags(Qt::WindowFlags flags);
+
     ~MainWindow();
 
     QTcpSocket *connectionManager;
@@ -50,6 +52,7 @@ public:
     bool connectionStatus;
 
     ChatBoxDialog *form;
+
     MyProfile *myProfile;
 
 public slots:

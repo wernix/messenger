@@ -2,6 +2,9 @@
 #define CHATBOXDIALOG_H
 
 #include <QTabWidget>
+#include <QDebug>
+#include <QEvent>
+#include <QWindowStateChangeEvent>
 #include "chatboxdialogcontent.h"
 
 namespace Ui {
@@ -24,6 +27,9 @@ private slots:
 
 private:
     Ui::ChatBoxDialog *ui;
+
+protected:
+
 };
 
 #endif // CHATBOXDIALOG_H

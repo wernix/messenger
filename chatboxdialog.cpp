@@ -1,6 +1,5 @@
 #include "chatboxdialog.h"
 #include "ui_chatboxdialog.h"
-#include <QDebug>
 
 ChatBoxDialog::ChatBoxDialog(QWidget *parent) :
     QTabWidget(parent),
@@ -22,5 +21,3 @@ void ChatBoxDialog::on_ChatBoxDialog_tabCloseRequested(int index)
         if(!(count-1))
             this->close();
 }
-
-

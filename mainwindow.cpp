@@ -13,11 +13,15 @@ MainWindow::MainWindow(QWidget *parent) :
     form = new ChatBoxDialog(0);
     createdTabs = new QMap<QString, ChatBoxDialogContent*>;
 
+
+
+
+
+
+
     createStatusBar();
 
     createTrayIcon();
-
-
 
     openLocalDatabase();
 
@@ -32,6 +36,12 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+//
+void MainWindow::setWindowFlags(Qt::WindowFlags flags)
+{
+
 }
 
 // Create and setup statusBar
@@ -228,6 +238,12 @@ void MainWindow::openChatBox()
 {
     if (!form->isVisible())
         form->show();
+
+    if(form->windowState() |=(Qt::WindowMinimized)) {
+        form->showMinimized();
+        form->showNormal();
+    }
+
 }
 
 // Function manages that message, when send to server
@@ -285,7 +301,6 @@ void MainWindow::addNewTab(QString to)
     createdTabs->insert(to, newContent);
 
     form->insertTab(to.toInt(), createdTabs->take(to), to);
-    //form->addTab(createdTabs->take(to), to);
     newContent->receiver = login;
     connect(newContent, SIGNAL(sendMessage(Message)), this, SLOT(recognitionMessage(Message)));
     form->setCurrentIndex(to.toInt());
@@ -303,7 +318,9 @@ void MainWindow::on_contactsList_doubleClicked(const QModelIndex &index)
 {
     QString to = index.model()->index(index.row(), ContactAlias, QModelIndex()).data().toString();
 
-    if(!tabIsOpen(to))
+    if(tabIsOpen(to)) {
+        openChatBox();
+    }else
         addNewTab(to);
 }
 
