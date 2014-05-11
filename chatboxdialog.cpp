@@ -13,6 +13,12 @@ ChatBoxDialog::~ChatBoxDialog()
     delete ui;
 }
 
+void ChatBoxDialog::closeEvent(QCloseEvent *event)
+{
+    this->clear();
+    event->accept();
+}
+
 void ChatBoxDialog::on_ChatBoxDialog_tabCloseRequested(int index)
 {
     int count = this->count();

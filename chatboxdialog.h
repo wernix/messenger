@@ -29,6 +29,7 @@ private:
     Ui::ChatBoxDialog *ui;
 
 protected:
+    void closeEvent(QCloseEvent *);
 
 };
 
