@@ -9,15 +9,12 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
     connectionManager = new QTcpSocket(this);
+
     form = new ChatBoxDialog(0);
+
     createdTabs = new QMap<QString, ChatBoxDialogContent*>;
-
-
-
-
-
-
 
     createStatusBar();
 
@@ -38,10 +35,19 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-//
-void MainWindow::setWindowFlags(Qt::WindowFlags flags)
+void MainWindow::changeEvent()
 {
+    if(this->windowState() == Qt::WindowMinimized) {
+        this->hide();
+        trayIcon->showMessage("Minimalize", "App is running. If you want to close click this icon and choose Quit in menu.", QSystemTrayIcon::Information, 10000);
+    }
+}
 
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    this->hide();
+    trayIcon->showMessage("Minimalize", "App is running. If you want to close click this icon and choose Quit in menu.", QSystemTrayIcon::Information, 10000);
+    event->ignore();
 }
 
 // Create and setup statusBar
@@ -60,11 +66,11 @@ void MainWindow::createTrayIcon()
     trayIcon->setIcon(ico);
     trayIcon->connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(on_tryIconActivated(QSystemTrayIcon::ActivationReason)));
 
-
     trayContextMenu = new QMenu(this);
     trayContextMenu->addAction(ui->actionMinimalize);
     trayContextMenu->addAction(ui->actionRestore);
     trayContextMenu->addAction(ui->actionQuit);
+
     trayIcon->setContextMenu(trayContextMenu);
     trayIcon->show();
 }
@@ -233,7 +239,7 @@ int MainWindow::tabIsOpen(QString tabName)
     return false;
 }
 
-// Check that ChatBoxDialog is open.
+// Check that ChatBoxDialog is open or minimalized.
 void MainWindow::openChatBox()
 {
     if (!form->isVisible())
@@ -337,4 +343,9 @@ void MainWindow::on_statusComboBox_currentIndexChanged(int index)
             connectionManager->disconnectFromHost();
         break;
     }
+}
+
+void MainWindow::on_actionQuit_triggered()
+{
+    qApp->quit();
 }

@@ -14,6 +14,8 @@
 #include <QMessageBox>
 #include <QSettings>
 #include <QSystemTrayIcon>
+#include <QEvent>
+#include <QCloseEvent>
 
 enum JsonParser {
     ParserCoding,
@@ -76,6 +78,8 @@ private slots:
 
     void on_tryIconActivated(QSystemTrayIcon::ActivationReason);
 
+    void on_actionQuit_triggered();
+
 private:
     QMap<QString, QString> *config;
 
@@ -115,6 +119,10 @@ private:
 
     void createStatusBar();
 
+protected:
+    void closeEvent(QCloseEvent *);
+
+    void changeEvent();
 };
 
 

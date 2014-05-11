@@ -179,21 +179,5 @@
     </hint>
    </hints>
   </connection>
-  <connection>
-   <sender>actionQuit</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>close()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>120</x>
-     <y>188</y>
-    </hint>
-   </hints>
-  </connection>
  </connections>
 </ui>
