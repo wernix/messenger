@@ -4,26 +4,31 @@
 #include <QString>
 #include <QDateTime>
 #include <QDebug>
+#include <QCryptographicHash>
+
 
 class Message
 {
 public:
+    enum MessageType {
+        C2C,
+        S2C
+    };
+
     Message();
-    QString sender;
-    QString reciver;
+    int type;
+    QString from;
+    QString to;
     QString msg;
-    QString time;
-    void setTimeAndDateMessage();
-    void prepareMessageToSending();
-    void addMsgToMsgbox();
+    QString timestamp;
+    QByteArray json;
+    QString html;
+    void toHtml();
+    void setTimestamp();
+    void encode();
+    void decode(QByteArray);
 
 private:
-    QString mIdGenerate(QString);
-    QString getTimeDate();
-    QString parserToJson(QString);
-    QString jsonMessage();
-protected:
-    bool sendMsgToServer(QString);
 };
 
 #endif // MESSAGE_H

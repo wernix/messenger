@@ -1,63 +1,44 @@
 #include "message.h"
-#include <QCryptographicHash>
-#include <QTcpSocket>
+
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonValue>
 
 Message::Message()
 {
 }
 
-
-QString Message::mIdGenerate(QString time)
+void Message::setTimestamp()
 {
-    QCryptographicHash sha1(QCryptographicHash::Sha1);
-    sha1.addData(time.toUtf8());
-    return sha1.result();
+    timestamp = QTime::currentTime().toString("hh:mm:ss") + " " + QDate::currentDate().toString("dd.MM.yyyy");
 }
 
-bool Message::sendMsgToServer(QString jsonMsg)
+void Message::encode()
 {
-//    QByteArray data(jsonMsg.toUtf8());
-//    bool status = QTcpSocket::isValid();
-//    if(status) {
-//        QTcpSocket::write( data );
-//        qDebug()<<"isOpen?!";
-//        return 1;
-//    }else {
-//        qDebug()<<"isClose!";
-//    }
+    QJsonDocument jsonDoc;
+    QJsonObject jsonObj;
+    jsonObj.insert("Type", QJsonValue(type));
+    jsonObj.insert("From", QJsonValue(from));
+    jsonObj.insert("To", QJsonValue(to));
+    jsonObj.insert("Message", QJsonValue(msg));
 
-    return 0;
+    jsonDoc.setObject(jsonObj);
+    json = jsonDoc.toJson();
 }
 
-
-void Message::addMsgToMsgbox()
+void Message::decode(QByteArray data)
 {
-    QString send_msg = "<p>"
-                        "<b>"+time+" "+sender+"(->"+reciver+")</b><br>"
-                        +msg+
-                      "</p>";
-//    ui->msgbox->append(send_msg);
+    QJsonParseError jsonError;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(data,&jsonError);
+    QJsonObject jsonObj = jsonDoc.object();
+
+    type = jsonObj["Type"].toInt();
+    from = jsonObj["From"].toString();
+    to = jsonObj["To"].toString();
+    msg = jsonObj["Message"].toString();
 }
 
-QString Message::parserToJson(QString msg)
+void Message::toHtml()
 {
-    return msg;
-}
-
-void Message::setTimeAndDateMessage()
-{
-    time = getTimeDate();
-}
-
-QString Message::getTimeDate()
-{
-    QString timeDate = QTime::currentTime().toString("hh:mm:ss") + " " + QDate::currentDate().toString("dd-MM-yyyy");
-    return timeDate;
-}
-
-
-void Message::prepareMessageToSending()
-{
-    QString send = parserToJson(sender+":"+reciver+":"+time+":"+msg);
-    sendMsgToServer(send);
+    html = "<p><font size='-3'>" + timestamp + "</font><b> " + from + "</b><br>" + msg + "</p>";
 }

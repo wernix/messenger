@@ -39,3 +39,16 @@ void ChatBoxForm::on_sendButton_clicked()
 }
 
 
+
+void ChatBoxForm::on_buddyTabs_tabCloseRequested(int index)
+{
+//    if(ui->buddyTabs->count() > 1) {
+//        ui->buddyTabs->removeTab(index);
+//    }
+    int count = ui->buddyTabs->tabBar()->count();
+    ui->buddyTabs->tabBar()->removeTab(index);
+
+    if(!(count-1))
+        this->close();
+    qDebug()<<QString::number(count)+":"+QString::number(index);
+}
