@@ -44,84 +44,60 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = 0);
-
-    void setWindowFlags(Qt::WindowFlags flags);
-
     ~MainWindow();
 
-    QTcpSocket *connectionManager;
-
     bool connectionStatus;
-
+    void setWindowFlags(Qt::WindowFlags flags);
+    QTcpSocket *connectionManager;
     ChatBoxDialog *form;
-
     MyProfile *myProfile;
 
 public slots:
-    void recognitionMessage(Message);
+    void dispatchMessage(Message);
 
 signals:
     void sendMessage(Message);
 
 private slots:
     void readTcpData();
-
+    void writeTcpData(Message message);
     void checkConnection(QAbstractSocket::SocketState);
+    void authorize();
 
     void on_actionAbout_triggered();
-
     void on_actionNew_conversation_triggered();
-
     void on_contactsList_doubleClicked(const QModelIndex &index);
-
     void on_statusComboBox_currentIndexChanged(int index);
-
     void on_tryIconActivated(QSystemTrayIcon::ActivationReason);
-
     void on_actionQuit_triggered();
 
 private:
-    QMap<QString, QString> *config;
 
-    QSqlDatabase contactsDb, accountsDb;
-
-    QSystemTrayIcon *trayIcon;
-
-    QMenu *trayContextMenu;
+    void openLocalDatabase();
+    void openChatBox();
+    void loadMyProfile();
+    void initContactsList();
+    void createTrayIcon();
+    int tabIsOpen(QString);
+    void createStatusBar();
+    void connectToServer(QString hostname, int port);
+    void addToConversation(ChatMessage);
+    void addNewTab(QString);
 
     bool isMinimalized;
 
-    QSqlTableModel *contactsModel;
-
-    void openLocalDatabase();
-
-    void loadMyProfile();
-
-    void openChatBox();
-
-    int tabIsOpen(QString);
-
     Ui::MainWindow *ui;
-
+    QMap<QString, QString> *config;
+    QSettings *settings;
+    QSqlDatabase contactsDb, accountsDb;
+    QSystemTrayIcon *trayIcon;
+    QMenu *trayContextMenu;
+    QSqlTableModel *contactsModel;
     ChatBoxDialogContent *templateChat;
-
     QMap<QString, ChatBoxDialogContent*> *createdTabs;
-
-    void connectToServer(QString, qint32);
-
-    void addToConversation(Message);
-
-    void addNewTab(QString);
-
-    void initContactsList();
-
-    void createTrayIcon();
-
-    void createStatusBar();
 
 protected:
     void closeEvent(QCloseEvent *);
-
     void changeEvent();
 };
 

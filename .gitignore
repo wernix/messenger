@@ -1,0 +1,8 @@
+ui_*.h
+moc*
+*.o
+qrc_*.cpp
+messenger
+messenger.pro.user
+*.sqlite
+Makefile

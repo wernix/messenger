@@ -1,8 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "message.h"
 
 #include "ui_chatboxdialogcontent.h"
-
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -26,8 +26,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
     initContactsList();
 
-    //connectToServer("172.30.0.7", 8008);
-    connectToServer("127.0.0.1", 8008);
+    this->settings = new QSettings("settings.ini", QSettings::IniFormat);
+
+    QString hostname = this->settings->value("Server/Hostname").toString();
+    int port = this->settings->value("Server/Port").toInt();
+
+    connect(this->connectionManager, SIGNAL(connected()), this, SLOT(authorize()));
+    connectToServer(hostname, port);
 }
 
 MainWindow::~MainWindow()
@@ -157,17 +162,20 @@ void MainWindow::initContactsList()
 }
 
 // Function using to connect with server
-void MainWindow::connectToServer(QString address, qint32 port)
+void MainWindow::connectToServer(QString address, int port)
 {
+    qDebug() << "Connecting to server: " << address << ":" << port;
+
     connectionManager->connectToHost(address, port);
     connect(connectionManager, SIGNAL(readyRead()), SLOT(readTcpData()));
 
     connect(connectionManager, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(checkConnection(QAbstractSocket::SocketState)));
 
     if(connectionManager->waitForConnected(500)) {
-        emit connectionManager->connected();
+        qDebug() << "Connected!";
     }else {
-        emit connectionManager->disconnected();
+        qDebug() << "Timeout waiting for connection";
+        QMessageBox::critical(this, "Problem during connection to server", "Server can't be reach at this time, sorry");
     }
 
     checkConnection(connectionManager->state());
@@ -211,15 +219,23 @@ void MainWindow::readTcpData()
     Message msg;
     QByteArray data = connectionManager->readAll();
 
-    msg.decode(data);
-    msg.setTimestamp();
-
-    if(msg.from == myProfile->login) {
-        connect(this, SIGNAL(sendMessage(Message)), this, SLOT(recognitionMessage(Message)));
-        emit sendMessage(msg);
-    }
-
     qDebug()<<"readTcp: " + data;
+
+    msg.decode(data);
+//    msg.setTimestamp();
+
+    dispatchMessage(msg);
+
+//    if(msg.from == myProfile->login) {
+//        connect(this, SIGNAL(sendMessage(Message)), this, SLOT(recognitionMessage(Message)));
+//        emit sendMessage(msg);
+    //    }
+}
+
+void MainWindow::writeTcpData(Message message)
+{
+    QByteArray data = message.encode();
+    this->connectionManager->write(data);
 }
 
 // Check if this tab is open.
@@ -254,27 +270,42 @@ void MainWindow::openChatBox()
 
 // Function manages that message, when send to server
 // and when show to chatbox
-void MainWindow::recognitionMessage(Message msg)
+void MainWindow::dispatchMessage(Message msg)
 {
-    if(msg.from == myProfile->login) {
-        addToConversation(msg);
-        connectionManager->write(msg.json);
+    switch (msg.type()) {
+    case 1: // Ping message
+        // Send reply
+        qDebug() << "Pong!";
+        Pong reply();
+        writeTcpData((Message)reply);
+        return;
+    case 20: // Auth result
+        if (!msg["authorization"].toBool()) {
+            QMessageBox::critical(this, "Authorization failed", "Login or password are wrong");
+        }
+        return;
     }
+    qCritical() << "NO ROUTE FOUND FOR MESSAGE";
 
-    if(msg.to == myProfile->login) {
-        addToConversation(msg);
-    }
+//    if(msg.from == myProfile->login) {
+//        addToConversation(msg);
+//        connectionManager->write(msg.json);
+//    }
+
+//    if(msg.to == myProfile->login) {
+//        addToConversation(msg);
+//    }
 }
 
 // Add message to ChatBox
-void MainWindow::addToConversation(Message msg)
+void MainWindow::addToConversation(ChatMessage msg)
 {
     openChatBox();
 
-    QString tabName = msg.to;
+    QString tabName = msg.to();
 
-    if(msg.to == myProfile->login)
-        tabName = msg.from;
+    if(msg.to() == myProfile->login)
+        tabName = msg.from();
 
     bool tabOpen = tabIsOpen(tabName);
 
@@ -283,9 +314,9 @@ void MainWindow::addToConversation(Message msg)
 
     // Get sender CBDC widget and add to conversation message
     ChatBoxDialogContent *w = (ChatBoxDialogContent*) sender();
-    w->ui->conversationHistory->append(msg.html);
+    w->ui->conversationHistory->append(msg.toHtml());
 
-    qDebug()<<"client: '" + msg.from + "' send to '" + msg.to + "' message: '" + msg.msg + "'";
+    qDebug()<<"client: '" + msg.from() + "' send to '" + msg.to() + "' message: '" + msg.text() + "'";
 }
 
 
@@ -308,9 +339,23 @@ void MainWindow::addNewTab(QString to)
 
     form->insertTab(to.toInt(), createdTabs->take(to), to);
     newContent->receiver = login;
-    connect(newContent, SIGNAL(sendMessage(Message)), this, SLOT(recognitionMessage(Message)));
+    connect(newContent, SIGNAL(sendMessage(Message)), this, SLOT(dispatchMessage(Message)));
     form->setCurrentIndex(to.toInt());
     form->activateWindow();
+}
+
+// Perform log in user to server
+void MainWindow::authorize()
+{
+    QString username = this->settings->value("User/Username").toString();
+    QString password = this->settings->value("User/Password").toString();
+
+    qDebug() << "Logging in: " << username << password;
+    Login authMessage;
+    authMessage["username"] = username;
+    authMessage["password"] = password;
+
+    this->writeTcpData(authMessage);
 }
 
 void MainWindow::on_actionNew_conversation_triggered()

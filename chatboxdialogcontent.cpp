@@ -23,13 +23,13 @@ void ChatBoxDialogContent::on_sendButton_clicked()
 
     QString text = ui->msgEdit->toPlainText();
     if(text.isSimpleText()) {
-        msg.type = Message::C2C;
-        msg.from = myProfile->login;
-        msg.to = receiver;
-        msg.msg = text;
-        msg.setTimestamp();
-        msg.encode();
-        msg.toHtml();
+        msg["type"] = 10;
+        msg["from"] = myProfile->login;
+        msg["to"] = receiver;
+        msg["text"] = text;
+//        msg.setTimestamp();
+//        msg.encode();
+//        msg.toHtml();
 
         emit sendMessage(msg);
 
